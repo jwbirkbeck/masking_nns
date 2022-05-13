@@ -32,7 +32,11 @@ plt.legend(title="Training")
 plt.xlabel("Epoch")
 plt.ylabel("Log MSE loss")
 plt.title("Mask vs weight training for large mask learning rates")
+plt.savefig("xor_result.png")
 plt.show()
+
+import os
+os.getcwd()
 
 net.forward(inputs)
 masking_net.forward(inputs, masking=False)
