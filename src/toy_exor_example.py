@@ -6,8 +6,8 @@ import numpy as np
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-net = BasicNet(0.003, 2, 5000, 1, device)
-masking_net = BasicMaskingNet(learning_rate_mask=3, learning_rate_nn=0.01, input_shape=2, hidden_layer_shape=5000,
+net = BasicNet(0.01, 2, 5, 1, device)
+masking_net = BasicMaskingNet(learning_rate_mask=1, learning_rate_nn=0.01, input_shape=2, hidden_layer_shape=5,
                               output_shape=1, mask_percent=0.5, device=device)
 
 inputs = torch.tensor([[0., 1.],
@@ -21,34 +21,25 @@ outputs = torch.tensor([[1.],
 
 loss_nn = []
 loss_mask = []
+
+# masking_net.refresh_unused_weights()
+
+
 for _ in range(100):
     loss_mask.append(masking_net.training_step_mask(inputs, outputs))
     loss_nn.append(net.training_step(inputs, outputs))
 
-plt.plot(loss_mask, label="Mask, lr = 3")
-plt.plot(loss_nn, label="Weights, lr = 0.003")
+plt.plot(loss_mask, label="Mask")
+plt.plot(loss_nn, label="Weights")
 plt.yscale("log")
 plt.legend(title="Training")
 plt.xlabel("Epoch")
-plt.ylabel("Log MSE loss")
+plt.ylabel("Log loss")
 plt.title("Mask vs weight training for large mask learning rates")
 plt.savefig("xor_result.png")
 plt.show()
 
-import os
-os.getcwd()
-
-net.forward(inputs)
-masking_net.forward(inputs, masking=False)
 masking_net.forward(inputs, masking=True)
+net.forward(inputs)
 
-
-masking_net.training_step_nn(inputs, outputs)
-masking_net.training_step_mask(inputs, outputs)
-
-
-torch.sum(masking_net.fc1_mask_weight.grad)
-torch.sum(masking_net.fc2_mask_weight.grad)
-torch.sum(masking_net.fc1_mask_bias.grad)
-torch.sum(masking_net.fc2_mask_bias.grad)
 
